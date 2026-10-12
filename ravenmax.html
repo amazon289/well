@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raven Max - FF Injector</title>
+    <style>
+        :root {
+            --bg-color: #0d0d12;
+            --panel-bg: #15151e;
+            --primary-color: #9d00ff;
+            --primary-glow: rgba(157, 0, 255, 0.6);
+            --text-main: #ffffff;
+            --text-dim: #8b8b99;
+            --danger: #ff2a2a;
+            --success: #00ff6a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .injector-container {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 20px var(--primary-glow);
+            overflow: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .injector-container.disabled-mode {
+            opacity: 0.6;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.2);
+            border-color: var(--danger);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a0845 100%);
+            padding: 20px;
+            border-bottom: 1px solid var(--primary-color);
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Styling untuk Logo Raven.jpg */
+        .header-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 15px var(--primary-glow);
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--primary-glow);
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .master-switch-container {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        .status-text {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .status-on { color: var(--success); text-shadow: 0 0 5px var(--success); }
+        .status-off { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
+
+        /* Styling untuk terserah.jpg */
+        .image-container {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .image-container img {
+            width: 120px;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .menu-section {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-section h2 {
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .feature-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        /* Toggle Switch CSS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--primary-color); box-shadow: 0 0 10px var(--primary-glow); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        input:disabled + .slider { cursor: not-allowed; opacity: 0.5; }
+
+        /* Dropdown & Color Picker */
+        select, input[type="color"] {
+            background-color: #0a0a0f;
+            color: var(--text-main);
+            border: 1px solid var(--primary-color);
+            padding: 5px;
+            border-radius: 4px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        select:disabled, input[type="color"]:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #444;
+        }
+
+        select option {
+            background-color: #0a0a0f;
+        }
+
+        /* Console */
+        .console {
+            background-color: #050508;
+            padding: 15px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            color: var(--success);
+            border-top: 2px solid var(--primary-color);
+        }
+
+        .console p { margin-bottom: 5px; }
+        .console .log-error { color: var(--danger); }
+        .console .log-info { color: #00e5ff; }
+        .console .log-warn { color: #ffea00; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050508; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="injector-container disabled-mode" id="mainContainer">
+        
+        <div class="header">
+            <!-- Logo Raven ditambahkan di sini -->
+            <img src="raven.jpg" alt="Raven Logo" class="header-logo">
+            <h1>Raven Max</h1>
+            <p>Free Fire Premium Injector</p>
+        </div>
+
+        <!-- Master Switch -->
+        <div class="master-switch-container">
+            <div>
+                <span>STATUS: </span>
+                <span id="statusText" class="status-text status-off">Deactivated</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="masterSwitch">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Image 1:1 (Bebas) -->
+        <div class="image-container">
+            <img src="terserah.jpg" alt="User Image">
+        </div>
+
+        <!-- Aimbot Section -->
+        <div class="menu-section">
+            <h2>Aimbot Features</h2>
+            
+            <div class="feature-item">
+                <span>Aim Target</span>
+                <select id="aimPart" class="cheat-input" disabled>
+                    <option value="Neck">Neck</option>
+                    <option value="Body">Body</option>
+                    <option value="Head (Risk!)">Head (Risk!)</option>
+                </select>
+            </div>
+            
+            <div class="feature-item">
+                <span>Aim Silent</span>
+                <label class="switch">
+                    <input type="checkbox" id="aimSilent" class="cheat-input" disabled>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- ESP Section -->
+        <div class="menu-section">
+            <h2>Visual / ESP</h2>
+            
+            <div class="feature-item">
+                <span>ESP Line</span>
+                <label class="switch">
+                    <input type="checkbox" id="espLine" class="cheat-input" disabled>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="feature-item">
+                <span>ESP Box</span>
+                <label class="switch">
+                    <input type="checkbox" id="espBox" class="cheat-input" disabled>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="feature-item">
+                <span>ESP Skeleton</span>
+                <label class="switch">
+                    <input type="checkbox" id="espSkeleton" class="cheat-input" disabled>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="feature-item">
+                <span>ESP Color</span>
+                <input type="color" id="espColor" value="#9d00ff" class="cheat-input" disabled>
+            </div>
+        </div>
+
+        <!-- Misc Section -->
+        <div class="menu-section">
+            <h2>Scripts</h2>
+            <div class="feature-item">
+                <span>Script Skin (Unlock All)</span>
+                <label class="switch">
+                    <input type="checkbox" id="scriptSkin" class="cheat-input" disabled>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- System Console -->
+        <div class="console" id="consoleLog">
+            <p>[SYSTEM] Injector initialized successfully.</p>
+            <p>[SYSTEM] Waiting for user input...</p>
+        </div>
+
+    </div>
+
+    <script>
+        const masterSwitch = document.getElementById('masterSwitch');
+        const mainContainer = document.getElementById('mainContainer');
+        const statusText = document.getElementById('statusText');
+        const cheatInputs = document.querySelectorAll('.cheat-input');
+        const consoleLog = document.getElementById('consoleLog');
+
+        // Fungsi untuk menambah log ke console
+        function addLog(message, type = 'info') {
+            const p = document.createElement('p');
+            const time = new Date().toLocaleTimeString('id-ID', { hour12: false });
+            p.textContent = `[${time}] ${message}`;
+            
+            if (type === 'error') p.className = 'log-error';
+            else if (type === 'warn') p.className = 'log-warn';
+            else if (type === 'success') p.style.color = 'var(--success)';
+            
+            consoleLog.appendChild(p);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        // Master Switch Logic
+        masterSwitch.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            
+            if (isChecked) {
+                mainContainer.classList.remove('disabled-mode');
+                statusText.textContent = 'Activated';
+                statusText.className = 'status-text status-on';
+                cheatInputs.forEach(input => input.disabled = false);
+                addLog('Raven Max Injector ACTIVATED', 'success');
+            } else {
+                mainContainer.classList.add('disabled-mode');
+                statusText.textContent = 'Deactivated';
+                statusText.className = 'status-text status-off';
+                
+                // Matikan semua fitur yang sedang on
+                cheatInputs.forEach(input => {
+                    input.disabled = true;
+                    if (input.type === 'checkbox') input.checked = false;
+                });
+                
+                addLog('Injector DEACTIVATED. All features turned off.', 'error');
+            }
+        });
+
+        // Event listener untuk tombol fitur
+        const features = [
+            { id: 'aimSilent', name: 'Aim Silent' },
+            { id: 'espLine', name: 'ESP Line' },
+            { id: 'espBox', name: 'ESP Box' },
+            { id: 'espSkeleton', name: 'ESP Skeleton' },
+            { id: 'scriptSkin', name: 'Script Skin' }
+        ];
+
+        features.forEach(feat => {
+            document.getElementById(feat.id).addEventListener('change', (e) => {
+                const status = e.target.checked ? 'activated' : 'deactivated';
+                const logType = e.target.checked ? 'info' : 'warn';
+                addLog(`[SYSTEM] ${feat.name}: ${status}`, logType);
+            });
+        });
+
+        // Event listener untuk dropdown Aimbot
+        document.getElementById('aimPart').addEventListener('change', (e) => {
+            addLog(`[SYSTEM] Aimbot target set to: ${e.target.value}`, 'info');
+        });
+
+        // Event listener untuk Color Picker ESP
+        document.getElementById('espColor').addEventListener('change', (e) => {
+            addLog(`[SYSTEM] ESP Color changed to: ${e.target.value.toUpperCase()}`, 'info');
+        });
+    </script>
+</body>
+</html>
